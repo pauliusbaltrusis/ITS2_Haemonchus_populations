@@ -78,33 +78,36 @@ sep_scores_hex<- combined_ddPCR %>% group_by(Sample) %>% summarize(mean_pos= mea
 # empirical percentile test leave-one-out
 rank_test_fam<- sep_scores$k
 
-target_val16<-sep_scores$k[sep_scores$Sample=="Hc_XJ4126_1_1000_20260326_122548_985_G02"]
-target_val17<-sep_scores$k[sep_scores$Sample=="Hc_XJ4126_1_1000_20260326_122548_985_H02"]
+target_valJ<-sep_scores$k[sep_scores$Sample=="J"]
+target_valM<-sep_scores$k[sep_scores$Sample=="M"]
 
-without16_rank_test_fam<- rank_test_fam[rank_test_fam!=target_val16]
-without17_rank_test_fam<- rank_test_fam[rank_test_fam!=target_val17]
+withoutJ_rank_test_fam<- rank_test_fam[rank_test_fam!=target_valJ]
+withoutM_rank_test_fam<- rank_test_fam[rank_test_fam!=target_valM]
 
 # empirical percentile of target relative to others
 
-rank_below<- sum(without16_rank_test_fam<target_val16) # how many samples are smaller than the 16th 
+rank_below_J<- sum(withoutJ_rank_test_fam<target_valJ) # how many samples are smaller than the 16th 
 
-p_percentile <- (rank_below +0.5)/(length(without16_rank_test_fam) + 1) # sum of all values below/less than sample 16 value + 0.5 / all values without 16th val (n) + 1.
+p_percentile_J <- (rank_below_J +0.5)/(length(withoutJ_rank_test_fam) + 1) # sum of all values below/less than sample 16 value + 0.5 / all values without 16th val (n) + 1.
   # What fraction of the ref distribution (without 16th sample) does the sample 16 sit at? At which percentile! In this case its 16 th sample is at 15th percentile. Not extreme
 
 # Two tailed p-value
 
-p_value <- 2* min(p_percentile, 1 - p_percentile) # looking at both tails (whichever is smaller p or 1-p) and doubles it
+p_value_J <- 2* min(p_percentile_J, 1 - p_percentile_J) # looking at both tails (whichever is smaller p or 1-p) and doubles it
 
-p_value # this value ranks at the 31th percentile of the rest of the data
+p_value_J # this value (Sample J) ranks at the 0.7647059 (76%) percentile of the rest of the data
 
 
-rank_below<- sum(without17_rank_test_fam<target_val17)
+rank_below_M<- sum(withoutM_rank_test_fam<target_valM)
 
-p_percentile <- (rank_below +0.5)/(length(without17_rank_test_fam) + 1)
+p_percentile_M <- (rank_below_M +0.5)/(length(withoutM_rank_test_fam) + 1)
 
 # Two tailed p-value
 
-p_value <- 2* min(p_percentile, 1 - p_percentile)
+p_value_M <- 2* min(p_percentile_M, 1 - p_percentile_M)
+
+p_value_M # Sample M is at 29th percentile of the distribution without M sample
+
 ```
 # Plotting WGS HC % composition in samples against ddPCR results 
 ```r
