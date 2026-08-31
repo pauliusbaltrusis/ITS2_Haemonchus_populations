@@ -60,18 +60,22 @@ ddPCR_plots_17
 ```r
 #Calculating k separation score Mean pos amplitude / Mean neg amplitude
 
-sep_scores<- combined_ddPCR %>% group_by(Sample) %>% summarize(mean_pos= mean(Ch1Amplitude[Hc==1], na.rm=TRUE),
+sep_scores_fam<- combined_ddPCR %>% group_by(Sample) %>% summarize(mean_pos= mean(Ch1Amplitude[Hc==1], na.rm=TRUE),
                                                             mean_neg= mean(Ch1Amplitude[Hc==0], na.rm=TRUE),
+                                                            sd_pos=sd(Ch1Amplitude[Hc==1], na.rm=TRUE),
+                                                            sd_neg=sd(Ch1Amplitude[Hc==0], na.rm=TRUE),
                                                             n_pos = sum(Hc==1),
                                                             n_neg = sum(Hc==0),
-                                                            k= mean_pos/mean_neg,
+                                                            k= (mean_pos-mean_neg)/(sd_pos+sd_neg),  # Gerdes et al 2016
                                                             .groups = "drop")
 
 sep_scores_hex<- combined_ddPCR %>% group_by(Sample) %>% summarize(mean_pos= mean(Ch2Amplitude[Univ==1], na.rm=TRUE),
                                                             mean_neg= mean(Ch2Amplitude[Univ==0], na.rm=TRUE),
+                                                            sd_pos=sd(Ch2Amplitude[Univ==1], na.rm=TRUE),
+                                                            sd_neg=sd(Ch2Amplitude[Univ==0], na.rm=TRUE),
                                                             n_pos = sum(Univ==1),
                                                             n_neg = sum(Univ==0),
-                                                            k= mean_pos/mean_neg,
+                                                            k= (mean_pos-mean_neg)/(sd_pos+sd_neg), # Gerdes et al 2016
                                                             .groups = "drop")
 
 
@@ -79,10 +83,10 @@ sep_scores_hex<- combined_ddPCR %>% group_by(Sample) %>% summarize(mean_pos= mea
 # FAM #
 
 # empirical percentile test leave-one-out
-rank_test_fam<- sep_scores$k
+rank_test_fam<- sep_scores_fam$k
 
-target_valJ<-sep_scores$k[sep_scores$Sample=="J"]
-target_valM<-sep_scores$k[sep_scores$Sample=="M"]
+target_valJ<-sep_scores_fam$k[sep_scores_fam$Sample=="J"]
+target_valM<-sep_scores_fam$k[sep_scores_fam$Sample=="M"]
 
 withoutJ_rank_test_fam<- rank_test_fam[rank_test_fam!=target_valJ]
 withoutM_rank_test_fam<- rank_test_fam[rank_test_fam!=target_valM]
@@ -93,24 +97,25 @@ withoutM_rank_test_fam<- rank_test_fam[rank_test_fam!=target_valM]
 rank_below_J<- sum(withoutJ_rank_test_fam<target_valJ) # how many samples are smaller than the 16th 
 
 p_percentile_J <- (rank_below_J +0.5)/(length(withoutJ_rank_test_fam) + 1) # sum of all values below/less than sample J value + 0.5 / all values without J value (n) + 1.
-  # What fraction of the ref distribution (without J sample) does the sample J sit at? At which percentile! In this case its: J sample is at 61st percentile of the distribution without it. Not extreme
-
+  # What fraction of the ref distribution (without J sample) does the sample J sit at? At which percentile! In this case its: J sample is at ~15st percentile of the distribution without it. Not extreme
+p_percentile_J # 15th percentile
 # Two tailed p-value
 
 p_value_J <- 2* min(p_percentile_J, 1 - p_percentile_J) # looking at both tails (whichever is smaller p or 1-p) and doubles it 
 
-p_value_J # p=0.76
+p_value_J # p=0.29
 
 ## sample M
 rank_below_M<- sum(withoutM_rank_test_fam<target_valM)
 
-p_percentile_M <- (rank_below_M +0.5)/(length(withoutM_rank_test_fam) + 1) # Sample M value is at 14th percentile of the distribution without it
+p_percentile_M <- (rank_below_M +0.5)/(length(withoutM_rank_test_fam) + 1) # Sample M value is at 3rd percentile of the distribution without it
 
+p_percentile_M # 3rd percentile
 # Two tailed p-value
 
 p_value_M <- 2* min(p_percentile_M, 1 - p_percentile_M)
 
-p_value_M # p=0.29
+p_value_M # p=0.058
 
 # HEX #
 
@@ -125,16 +130,20 @@ withoutM_rank_test_hex<- rank_test_hex[rank_test_hex!=target_hex_valM]
 # J sample
 rank_below_J_hex<- sum(withoutJ_rank_test_hex<target_hex_valJ)
 
-p_percentile_J_hex <- (rank_below_J_hex +0.5)/(length(withoutJ_rank_test_hex) + 1) # Sample J value is at 91st percentile
+p_percentile_J_hex <- (rank_below_J_hex +0.5)/(length(withoutJ_rank_test_hex) + 1) # Sample J value is at 38th percentile
+
+p_percentile_J_hex # 38th percentile
 
 p_value_J_hex <- 2* min(p_percentile_J_hex, 1 - p_percentile_J_hex) 
 
-p_value_J_hex # p=0.1764706
+p_value_J_hex # p=0.76
 
 # M sample
 rank_below_M_hex<- sum(withoutM_rank_test_hex<target_hex_valM)
 
-p_percentile_M_hex <- (rank_below_M_hex +0.5)/(length(withoutM_rank_test_hex) + 1) # Sample M value is at 97th percentile
+p_percentile_M_hex <- (rank_below_M_hex +0.5)/(length(withoutM_rank_test_hex) + 1) # Sample M value is at 3rd percentile
+
+p_percentile_M_hex
 
 p_value_M_hex <- 2* min(p_percentile_M_hex, 1 - p_percentile_M_hex) 
 
