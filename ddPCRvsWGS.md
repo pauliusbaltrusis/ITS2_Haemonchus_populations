@@ -155,8 +155,8 @@ sep_score_table<-inner_join(sep_scores_fam, sep_scores_hex, by= "Sample") %>% pi
 # Plotting sep scores
 
 sep_score_plot<-ggplot(sep_score_table, aes(x=Sample, y=k, color = group, group=group))+
-  geom_point(size=2)+
-  geom_line(size=1)+
+  geom_point(size=2,alpha=0.9)+
+  geom_line(size=1, alpha=0.7)+
   labs(y= "Separation, k", color="")+
   scale_color_manual(labels = c("Hc", "Univ"), values = c("#3B4CC0", "#06402B"))+ 
   theme_minimal()
