@@ -149,6 +149,19 @@ p_value_M_hex <- 2* min(p_percentile_M_hex, 1 - p_percentile_M_hex)
 
 p_value_M_hex # p=0.06
 
+# Combining tables
+
+sep_score_table<-inner_join(sep_scores_fam, sep_scores_hex, by= "Sample") %>% pivot_longer(cols=starts_with("k"), names_to = "group", values_to = "k")
+# Plotting sep scores
+
+sep_score_plot<-ggplot(sep_score_table, aes(x=Sample, y=k, color = group, group=group))+
+  geom_point(size=2)+
+  geom_line(size=1)+
+  labs(y= "Separation, k", color="")+
+  scale_color_manual(labels = c("Hc", "Univ"), values = c("#3B4CC0", "#06402B"))+ 
+  theme_minimal()
+
+sep_score_plot
 ```
 # Plotting WGS HC % composition in samples against ddPCR results 
 ```r
