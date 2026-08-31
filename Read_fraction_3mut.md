@@ -121,6 +121,7 @@ pop_summary <- results_df %>% group_by(population) %>%
 
 write.table(pop_summary, "probe_region_ge3snp_reads_per_population.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
+## Plotting
 ```r
  Merge pop_summary tables
 pop_summary_Hc<- pop_summary %>% mutate(pct_hc=pct) %>% select(population,pct_hc)
