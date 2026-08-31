@@ -121,3 +121,44 @@ pop_summary <- results_df %>% group_by(population) %>%
 
 write.table(pop_summary, "probe_region_ge3snp_reads_per_population.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
+```r
+ Merge pop_summary tables
+pop_summary_Hc<- pop_summary %>% mutate(pct_hc=pct) %>% select(population,pct_hc)
+pop_summary_Univ<-pop_summary_uni %>% mutate(pct_univ=pct) %>% select(population, pct_univ)
+
+pop_summaries<-inner_join(pop_summary_Hc, pop_summary_Univ, by="population")
+
+pop_summaries$population<-  gsub("\\-ampure.*", "", pop_summaries$population)
+pop_summaries$population<-  gsub("\\.sort\\.markdup", "", pop_summaries$population)
+
+temp_names <- c("Sample_XJ-4126-1", "Sample_XJ-4126-2", "Sample_XJ-4126-3",
+                   "Sample_XJ-4126-4", "Sample_XJ-4126-5", "Sample_XJ-4126-6",
+                   "Sample_XJ-4126-7", "Sample_XJ-4126-8", "Sample_XJ-4126-9",
+                   "Sample_XJ-4126-10", "Sample_XJ-4126-11", "Sample_XJ-4126-12",
+                   "Sample_XJ-4126-13", "Sample_XJ-4126-14", "Sample_XJ-4126-15",
+                   "Sample_XJ-4126-16", "Sample_XJ-4126-17")  #  temp names
+
+
+real_names<-c("A2", "F1", "C", "D", "E", "A1", "G1", "B", "G2", "F2", "H", "N", "I", "L", "K", "M", "J")
+
+
+ranked_names<-c("A1","A2","B",'C','D','E','F1','F2','G1','G2','H','I','J','K','L',"M","N")
+
+
+pop_summaries$population<-real_names[match(pop_summaries$population, temp_names)]
+
+pop_summaries$population <- factor(pop_summaries$population, levels = ranked_names)
+
+pop_summaries_longer<-pivot_longer(pop_summaries, names_to = "group", values_to = "prct", cols = starts_with("pct"))
+
+# Plotting
+pop_summary_plot<-ggplot(pop_summaries_longer, aes(x=population, y=prct, fill= group))+
+  geom_col(position=position_dodge(width=0.8), width = 0.7, alpha=0.7) +
+  labs(x= "", y="Reads with >=3 mutations %", fill="")+
+  scale_fill_manual(labels = c("Hc", "Univ"), values = c("#3B4CC0", "#06402B"))+
+  theme_minimal()+
+  theme(axis.text.x = element_text(angle=45, hjust=1))
+
+pop_summary_plot
+```
+
