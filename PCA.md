@@ -32,7 +32,69 @@ for bam in "$bam_files"/*.bam; do
     echo "done: $base_name"
 done
 ```
-# Parsing mpileups into A, C, T, G, N, del counts and aggregating across copies 
+# Parsing mpileups into A, C, T, G, N, del counts and aggregating across copies
+```python
+# Set dir wih files
+import os
+os.chdir(r"C:\Users\pauli\Desktop\SLU\data\HC_amplicon")
+
+#### Version 2 A C T G N INDELS 
+
+# Import packages
+import glob
+import pandas as pd
+import re
+
+def parse_pileup_base_string(bases, ref):
+    bases = re.sub(r'\^.', '', bases)
+    bases = bases.replace('$', '')
+    bases = re.sub(r'[+-](\d+)([ACGTNacgtn]+)', '', bases)
+    counts = {"A":0, "C":0, "G":0, "T":0, "N":0, "del":0}
+    for b in bases:
+        if b in '.,':
+            if ref.upper() in counts:
+                counts[ref.upper()] += 1
+        elif b in '*#': # Deletions have their own labelling but not insertions. Insertions (such as +2AG, exist outside the reference labelling entirely =>
+            # and it's not possible to assign then to particular positions i.e. 1-20 nts for example)
+            counts["del"] += 1
+        elif b.upper() == 'N':
+            counts["N"] += 1
+        elif b.upper() in counts:
+            counts[b.upper()] += 1
+    return counts
+
+# Use a look up file containing all bases in the range for 11 ITS2 copies
+lookup = pd.read_csv("amplicon_region_lookup.txt", sep="\t", names=["chrom","pos","copy"])
+
+# Loop through .pileup(s) converting every line into a string of matches/mismatches to ref and recording them in a table
+for pileup_file in glob.glob("*.pileup.txt"):
+    pop_name = pileup_file.replace(".pileup.txt", "")
+    rows = []
+    with open(pileup_file) as f:
+        for line in f:
+            # remove trailing new lines and replace with tabs
+            fields = line.rstrip("\n").split("\t")
+            # all 4 columns are pulled out and pos and depth are converted to integers
+            chrom, pos, ref, depth = fields[0], int(fields[1]), fields[2], int(fields[3])
+            # bases column is 4th and need to check it even exists (not empty with depth 0), otherwise its empty
+            bases = fields[4] if len(fields) > 4 and depth != "0" else ""
+            # calling the previous function to count bases
+            counts = parse_pileup_base_string(bases, ref)
+            # adding the date to the df
+            rows.append([chrom, pos, ref, depth, counts["A"], counts["C"], counts["G"], counts["T"],
+                         counts["N"], counts["del"]])
+
+    df = pd.DataFrame(rows, columns=["chrom","pos","ref","depth",
+                                       "count_A","count_C","count_G","count_T",
+                                       "count_N","count_del"])
+    # Merging lookup file with every base for 11 copies with the generated df 
+    merged = df.merge(lookup, on=["chrom","pos"], how="left")
+    merged = merged[["chrom","pos","copy","ref","depth",
+                      "count_A","count_C","count_G","count_T","count_N","count_del"]]
+    # save it!
+    merged.to_csv(f"{pop_name}.raw_counts.tsv", sep="\t", index=False)
+    print(f"done: {pop_name}")
+```
 ```r
 library(tidyverse)
 library(ggtext)
