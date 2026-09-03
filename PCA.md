@@ -33,6 +33,7 @@ for bam in "$bam_files"/*.bam; do
 done
 ```
 # Parsing mpileups into A, C, T, G, N, del counts and aggregating across copies
+## Converting .mpileups into clean .tsvs for further analysis in R
 ```python
 # Set dir wih files
 import os
@@ -95,6 +96,7 @@ for pileup_file in glob.glob("*.pileup.txt"):
     merged.to_csv(f"{pop_name}.raw_counts.tsv", sep="\t", index=False)
     print(f"done: {pop_name}")
 ```
+## Importing .tsvs and aggregating the bases into a readable table
 ```r
 library(tidyverse)
 library(ggtext)
