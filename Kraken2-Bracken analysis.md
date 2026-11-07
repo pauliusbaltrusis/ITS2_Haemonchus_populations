@@ -211,9 +211,10 @@ p_stacked<-ggplot(plot_data, aes(x=sample, y=prct, fill=species)) +
   theme(axis.text.x=element_text(angle=45, hjust=1),
         panel.grid.major.x=element_blank())
 p_stacked
-
+```
 ![p_stacked](p_stacked.png)
 
+```r
 p_facet<- ggplot(plot_data, aes(x=sample, y=prct, fill=species)) +
   geom_col(show.legend = FALSE)+
   facet_wrap(~species, scales="free_y")+
@@ -228,6 +229,6 @@ p_facet<- ggplot(plot_data, aes(x=sample, y=prct, fill=species)) +
         strip.text = element_text(face="bold"))
   
 p_facet
-
-![p_facet](p_facet.png)
 ```
+![p_facet](p_facet.png)
+
