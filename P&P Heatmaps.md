@@ -463,4 +463,4 @@ comb_plot<-heatmap+heatmap2 +
   plot_layout(guides = "collect", axes="collect")
 comb_plot
 ```
-[comb_plot](comb_plot.png)
+![comb_plot](comb_plot.png)
