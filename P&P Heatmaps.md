@@ -180,7 +180,6 @@ agg<- combined %>%
 ```
 ```r
 # Compute fractions
-
 agg <- agg %>%
   rowwise() %>% # perform below operations rowwise
   mutate(
