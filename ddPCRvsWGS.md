@@ -54,9 +54,11 @@ ddPCR_plots_17<-ggplot(combined_long, aes(x=Number, y=Amplitude, colour=factor(S
         strip.text = element_text(face="bold"))+
   facet_nested_wrap(vars(Sample, Channel), ncol=8, nest_line=element_line(),strip.position = "top")
 ddPCR_plots_17
-
 ```
+![ddPCR_plots_17](ddPCR_plot.png)
+
 # Calculating k (Separability score) for each population
+
 ```r
 #Calculating k separation score Mean pos amplitude / Mean neg amplitude
 
@@ -163,12 +165,19 @@ sep_score_plot<-ggplot(sep_score_table, aes(x=Sample, y=k, color = group, group=
 
 sep_score_plot
 ```
+![sep_score_plot](sep_score_plot.png)
+
 # Plotting WGS HC % composition in samples against ddPCR results 
 ```r
-# Bar plot % HC
-WGS_Hc<- bracken_prct_with_unclassified %>% filter(species=="Haemonchus contortus") %>% select(sample,prct) %>% rename(., WGS=prct)
+# ddPCR vs WGS comparison for Haemonchus contortus
 
-ddPCR_Hc<- read.csv("C:/Users/pauli/Desktop/SLU/data/ddPCR data pops 1-17/Amlan_Nancy_Hc_XJ4126_1_1000_20260326_122548_985.csv") %>% 
+WGS_Hc<- bracken_prct_with_unclassified %>% filter(species=="Haemonchus contortus") %>% select(sample,prct) %>% rename(., WGS=prct) # contains Ovis aries reads, but low %
+
+# Alternatively, without Unclassified reads. Requires "bracken_prct_norm" from Kraken2-Bracken part
+
+WGS_without_UN_Hc<-bracken_nohost_prct_norm %>% filter(species=="Haemonchus contortus") %>% select(sample,prct) %>% rename(., WGS=prct)
+
+ddPCR_Hc<- read.csv("C:/Users/pauli/Desktop/SLU/data/ddPCR data pops 1-17/XJ4126_1_1000_ALL17.csv") %>% 
   select(Sample.description.1, Target, Copies.20µLWell) %>% 
   rename(., sample=Sample.description.1) %>%
   mutate(sample=gsub(" ", "-", sample)) %>%
@@ -179,56 +188,82 @@ ddPCR_Hc<- read.csv("C:/Users/pauli/Desktop/SLU/data/ddPCR data pops 1-17/Amlan_
 
 wgs_ddpcr_combined_short<-inner_join(by="sample", ddPCR_Hc, WGS_Hc) %>% select(sample, ddPCR, WGS)
 
-wgs_ddpcr_combined<-inner_join(by="sample", ddPCR_Hc, WGS_Hc) %>% select(sample, ddPCR, WGS) %>% 
-  pivot_longer(cols=c(ddPCR, WGS ), names_to = "method", values_to = "fraction")
+#Alternatively, with WGS_without_UN_Hc
 
-wgs_ddpcr_combined$sample<- factor(wgs_ddpcr_combined$sample, levels = true_order)
+wgs_ddpcr_without_UN_combined_short<-inner_join(by="sample", ddPCR_Hc, WGS_without_UN_Hc) %>% select(sample, ddPCR, WGS)
+
+# Willcoxon signed rank test
+
+wilcox.test(wgs_ddpcr_combined_short$ddPCR, wgs_ddpcr_combined_short$WGS, paired = TRUE) # p value - 1.52e-05
+
+# Alternatively without UN reads
+
+wilcox.test(wgs_ddpcr_without_UN_combined_short$ddPCR, wgs_ddpcr_without_UN_combined_short$WGS, paired = TRUE) # p value - 0.43
+
+# Dumbell plot. Without UN reads
+
+wgs_ddpcr_without_UN_combined_short$sample<-real_names[match(wgs_ddpcr_without_UN_combined_short$sample, temp_names)]
+
+wgs_ddpcr_without_UN_combined_short$sample <- factor(wgs_ddpcr_without_UN_combined_short$sample, levels = ranked_names)
+
+Dumbell_without_UN<- wgs_ddpcr_without_UN_combined_short
+
+Dumbell_without_UN$sample <- factor(Dumbell_without_UN$sample, levels = rev(ranked_names))
 
 
-bar_plot_ddPCR_WGS<-ggplot(wgs_ddpcr_combined, aes(x=sample, y= fraction, fill = method)) +
-  geom_col(position=position_dodge(width=0.8), width = 0.7) +
-  labs(x= "sample", y="Haemonchus, %", fill="Method")+
-  scale_fill_manual(values=brewer.pal(12, "Paired")[c(1,5)])+
-  theme_minimal()+
-  theme(axis.text.x = element_text(angle=45, hjust=1))
+Dumbell_without_UN_long<- Dumbell_without_UN %>% pivot_longer(cols = c(ddPCR, WGS), names_to = "Method", values_to = "Frequency")
 
-bar_plot_ddPCR_WGS
+dumbell_plot_without_UN<- ggplot() + geom_segment(data=Dumbell_without_UN, aes(x=ddPCR, xend=WGS, y=sample, yend=sample), color="gray70", linewidth = 0.8) + 
+  geom_point(data=Dumbell_without_UN_long, aes(x=Frequency, y=sample, color=Method), size=2.8) + 
+  scale_color_manual(values = setNames(c("#4C72B0", "#DD8452"), c("ddPCR", "WGS")
+    )) +
+    labs(x = "*H. contortus* (%)", y = NULL, color = NULL,
+         title = "")  +
+    theme_minimal(base_size = 11) +
+    theme(legend.position = "bottom",
+          panel.grid.minor = element_blank(),
+          axis.title.x = element_markdown())
+
+dumbell_plot_without_UN
 ```
+![dumbell_plot](dumbell_plot.png)
+
 # Bland-Altmann plot
 ```r
-# Bland-Altmann instead
+# Bland-Altmann plotting
 
-baltmann<- wgs_ddpcr_combined_short %>% mutate(mean_val= (ddPCR+WGS)/2,
+baltmann_without_UN<- wgs_ddpcr_without_UN_combined_short %>% mutate(mean_val= (ddPCR+WGS)/2,
                                                diff_val= ddPCR-WGS)
 
 
-baltmann$sample<-real_names[match(baltmann$sample, temp_names)]
+#baltmann_without_UN$sample<-real_names[match(baltmann_without_UN$sample, temp_names)]
 
 
-mean_diff<- mean(baltmann$diff_val)
-sd_diff<- sd(baltmann$diff_val)
+mean_diff_without_UN<- mean(baltmann_without_UN$diff_val)
+sd_diff_without_UN<- sd(baltmann_without_UN$diff_val)
 
-upper_limit<-mean_diff+ 1.96*sd_diff
-lower_limit<-mean_diff-1.96*sd_diff
+upper_limit_without_UN<-mean_diff_without_UN+ 1.96*sd_diff_without_UN
+lower_limit_without_UN<-mean_diff_without_UN-1.96*sd_diff_without_UN
 
 
-baltmann_plot<-ggplot(baltmann, aes(x=mean_val, y=diff_val))+
+baltmann_plot_without_UN<-ggplot(baltmann_without_UN, aes(x=mean_val, y=diff_val))+
   geom_point(size=3, color="steelblue")+
-  geom_hline(yintercept = mean_diff, colour = "black", linetype = "solid")+
-  geom_hline(yintercept = upper_limit, colour = "red", linetype = "dashed")+
-  geom_hline(yintercept = lower_limit, colour = "red", linetype = "dashed")+
-  annotate("text", x=max(baltmann$mean_val), y=mean_diff,
-           label= paste0("Mean diff = ", round(mean_diff, 1)),
+  geom_hline(yintercept = mean_diff_without_UN, colour = "black", linetype = "solid")+
+  geom_hline(yintercept = upper_limit_without_UN, colour = "red", linetype = "dashed")+
+  geom_hline(yintercept = lower_limit_without_UN, colour = "red", linetype = "dashed")+
+  annotate("text", x=max(baltmann_without_UN$mean_val), y=mean_diff_without_UN,
+           label= paste0("Mean diff = ", round(mean_diff_without_UN, 1)),
            vjust=-0.5, hjust=1, size=3.5)+
-   annotate("text", x=max(baltmann$mean_val), y=upper_limit,
-           label= paste0("+1.96 SD = ", round(upper_limit, 1)),
+   annotate("text", x=max(baltmann_without_UN$mean_val), y=upper_limit_without_UN,
+           label= paste0("+1.96 SD = ", round(upper_limit_without_UN, 1)),
            vjust=-0.5, hjust=1, size=3.5, color="red")+
-   annotate("text", x=max(baltmann$mean_val), y=lower_limit,
-           label= paste0("-1.96 SD = ", round(lower_limit, 1)),
+   annotate("text", x=max(baltmann_without_UN$mean_val), y=lower_limit_without_UN,
+           label= paste0("-1.96 SD = ", round(lower_limit_without_UN, 1)),
            vjust=-0.5, hjust=1, size=3.5, color="red")+
   ggrepel::geom_text_repel(aes(label=sample), size=3)+
   labs(x = "(ddPCR + WGS) / 2",
        y = "ddPCR - WGS") + theme_minimal()
 
-baltmann_plot
+baltmann_plot_without_UN
 ```
+![bland-altmann](bland-altmann.png)
