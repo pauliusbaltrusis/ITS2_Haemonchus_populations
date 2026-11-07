@@ -91,7 +91,6 @@ done
 ```r
 library(tidyverse)
 
-
 bracken_dir<-"C:/Users/pauli/Desktop/SLU/data/Kraken2 db/0_confidence reports"
 
 # Generate a list metafile
@@ -110,6 +109,11 @@ bracken_tidy <- bracken_all %>%
   mutate(species = str_trim(species)) %>%
   select(sample,species, taxonomy_id, new_est_reads, fraction_total_reads)
 
+# Removing Ovis aries (host reads for Hc % estimation)
+
+bracken_nohost<- bracken_tidy %>% filter(species!="Ovis aries")
+
+
 # Normalize to 100% before adding in the unclassified reads
 
 bracken_prct_norm <- bracken_tidy %>%
@@ -117,11 +121,23 @@ bracken_prct_norm <- bracken_tidy %>%
   mutate(prct= new_est_reads / sum(new_est_reads) * 100) %>%
   ungroup()
 
+# No host reads
+
+bracken_nohost_prct_norm<- bracken_nohost %>%
+  group_by(sample) %>%
+  mutate(prct= new_est_reads / sum(new_est_reads) * 100) %>%
+  ungroup()
+
+# remove -ampure endings from sample names
+
+bracken_nohost_prct_norm$sample<- gsub("-ampure.*","", bracken_nohost_prct_norm$sample)
+
 # Grabbing the unclassified reads from kraken2 report "U"
 
 kreport_dir <- "C:/Users/pauli/Desktop/SLU/data/Kraken2 db/0_confidence reports/kraken2 reports"
 
 # extract U reads from each report using a function
+
 get_unclassified_prct <- function(sample) {
   kreport_file <- file.path(kreport_dir, paste0(sample, ".kreport"))
   kreport<- read_tsv(kreport_file, col_names = c( "prct", "reads_clade", "reads_direct", "rank", "taxid", "name"), show_col_types = FALSE)
@@ -133,7 +149,7 @@ get_unclassified_prct <- function(sample) {
 unclassified_prct<-tibble(sample=just_sample_names) %>%
   mutate(unclass_prct=map_dbl(sample, get_unclassified_prct))
 
-# Removing the unclassfied read % from the total per sample
+# Removing the unclassified read % from the total per sample
 
 bracken_prct_with_unclassified <- bracken_prct_norm %>%
   left_join(unclassified_prct, by ="sample") %>%
@@ -148,9 +164,15 @@ unclassified_row <- unclassified_prct %>%
 
 bracken_prct_with_unclassified <- bind_rows(bracken_prct_with_unclassified, unclassified_row)
 
-# Remove "ampure" tags
+# Remove "ampure" / fastp_trim tags
 
 bracken_prct_with_unclassified$sample<- gsub("-ampure.*","", bracken_prct_with_unclassified$sample)
+bracken_prct_with_unclassified$sample<- gsub("_fastp_trim*","", bracken_prct_with_unclassified$sample)
+
+# ALternative file. Remove "ampure" / fastp_trim tags
+
+bracken_prct_norm$sample<- gsub("-ampure.*","", bracken_prct_norm$sample)
+bracken_prct_norm$sample<- gsub("_fastp_trim*","", bracken_prct_norm$sample)
 
 #Plotting
 species_order<- plot_data %>%
@@ -190,6 +212,8 @@ p_stacked<-ggplot(plot_data, aes(x=sample, y=prct, fill=species)) +
         panel.grid.major.x=element_blank())
 p_stacked
 
+![p_stacked](p_stacked.png)
+
 p_facet<- ggplot(plot_data, aes(x=sample, y=prct, fill=species)) +
   geom_col(show.legend = FALSE)+
   facet_wrap(~species, scales="free_y")+
@@ -204,4 +228,6 @@ p_facet<- ggplot(plot_data, aes(x=sample, y=prct, fill=species)) +
         strip.text = element_text(face="bold"))
   
 p_facet
+
+![p_facet](p_facet.png)
 ```
