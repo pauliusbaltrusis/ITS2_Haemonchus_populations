@@ -162,4 +162,4 @@ pop_summary_plot<-ggplot(pop_summaries_longer, aes(x=population, y=prct, fill= g
 
 pop_summary_plot
 ```
-
+![pop_summary_plot](pop_summary_plot.png)
