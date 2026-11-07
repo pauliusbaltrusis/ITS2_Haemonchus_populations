@@ -460,7 +460,7 @@ heatmap2
 ```
 #Combine primer and probe plots into 1 thru patchwork
 comb_plot<-heatmap+heatmap2 +
-  #plot_annotation(title = 'Non-reference allele frequencies in the HC-specific primer and probe binding sites across the different populations') +
   plot_layout(guides = "collect", axes="collect")
 comb_plot
 ```
+[comb_plot](comb_plot.png)
