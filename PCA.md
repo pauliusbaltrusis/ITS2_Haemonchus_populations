@@ -209,7 +209,9 @@ pca_plot<-ggplot(pca_df, aes(x=PC1, y=PC2, color=population))+
   )
 
 pca_plot
-  ```
+```
+![pca_plot](pca_plot.png)
+
 ## Depth at every Hc amplicon position per population
 ```r
 # Supplementary - plot the depth at every pos (1-167 for all populations) - barplot histogram
@@ -238,3 +240,4 @@ depth_plot<- ggplot(depth_agg, aes(x=relpos, y=called_bases, color=population)) 
   
 depth_plot
 ```
+![depth_plot](depth_plot.png)
