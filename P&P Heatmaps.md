@@ -383,7 +383,7 @@ combined2 <- files %>%
   mutate(population = str_remove(source_file, "\\.sort\\.markdup\\.primer_raw_counts.tsv$")) # edit the column source file
 ```
 ```r
- Forward and Reverse should both start at 5', rather than at the ''left/upstream most" base
+ # Forward and Reverse should both start at 5', rather than at the ''left/upstream most" base
 combined2 <- combined2 %>%
   group_by(chrom, copy, direction) %>%
   mutate(
