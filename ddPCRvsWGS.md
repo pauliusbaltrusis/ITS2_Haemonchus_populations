@@ -55,7 +55,7 @@ ddPCR_plots_17<-ggplot(combined_long, aes(x=Number, y=Amplitude, colour=factor(S
   facet_nested_wrap(vars(Sample, Channel), ncol=8, nest_line=element_line(),strip.position = "top")
 ddPCR_plots_17
 ```
-![ddPCR_plots_17](ddPCR_plot.png)
+![ddPCR_plots_17](ddPCR_plots_17.png)
 
 # Calculating k (Separability score) for each population
 
