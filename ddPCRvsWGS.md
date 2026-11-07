@@ -57,6 +57,36 @@ ddPCR_plots_17
 ```
 ![ddPCR_plots_17](ddPCR_plots_17.png)
 
+
+```
+# Plotting pos droplet violin plots
+
+library(ggtext)
+
+# Filter dataset to include HC=="1"
+
+Violin_data_Hc <- combined_ddPCR %>% filter(Hc=="1") %>% select(Sample, Ch1Amplitude)
+
+## calculate SDs
+SDs_violin<- Violin_data_Hc %>% group_by(Sample) %>% summarize(SD=sd(Ch1Amplitude), maxx=max(Ch1Amplitude)) 
+
+# Plot
+Violin_ddpcr_plot<-ggplot(Violin_data_Hc, aes(x=Sample, y= Ch1Amplitude)) +
+  geom_violin(show.legend = FALSE, size = 1, alpha = 0.7, fill="#000666")+
+  geom_jitter(width = 0.05, alpha = 0.8, size = 0.1) +
+  labs(y = "*H. contortus* positive droplet amplitude", x="") +
+ theme_minimal(base_size = 11)+
+  theme(legend.position = "none", axis.title.y = element_markdown())
+
+Merged_violin<-Violin_ddpcr_plot+ geom_text(data=SDs_violin, aes(x= Sample, y=maxx, label=paste0("SD:", round(SD, 1))), 
+                             vjust = -0.5, inherit.aes = FALSE, size=3.5)
+
+Merged_violin<- Merged_violin+ scale_y_continuous(expand = expansion(mult = c(0.05, 0.05)))
+
+Merged_violin
+```
+![Merged_violin](merged_violin.png)
+
 # Calculating k (Separability score) for each population
 
 ```r
