@@ -1,6 +1,7 @@
 # Methodological insight into inter- and intra rDNA variation in field Haemonchus populations
 
-Code and scripts related to Haemonchus contortus population ITS2 analyses
+Code and scripts related to the manuscript Baltrusis et al. 2026, Methodological insight into inter- and intra rDNA variation in field Haemonchus populations
+
 
 ## Code sections
 ### Code related to performing Kraken2-Bracken analysis on a supercomputer cluster can be found here:
