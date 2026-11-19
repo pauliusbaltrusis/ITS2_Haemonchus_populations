@@ -1,6 +1,6 @@
 # Methodological insight into inter- and intra rDNA variation in field Haemonchus populations
 
-Code and scripts related to the manuscript Baltrusis et al. 2026, Methodological insight into inter- and intra rDNA variation in field Haemonchus populations
+Code and scripts related to the manuscript _Baltrusis et al. 2026, Methodological insight into inter- and intra rDNA variation in field Haemonchus populations_
 
 
 ## Code sections
