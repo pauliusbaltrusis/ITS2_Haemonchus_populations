@@ -4,19 +4,19 @@ Code and scripts related to the manuscript _Baltrusis et al. 2026, Methodologica
 
 
 ## Code sections
-### Code for: Performing Kraken2-Bracken analysis on a supercomputer cluster can be found here:
+### Performing Kraken2-Bracken analysis on a supercomputer cluster:
 [Kraken2-Bracken analysis](https://github.com/pauliusbaltrusis/ITS2_Haemonchus_populations/blob/main/Kraken2-Bracken%20analysis.md)
 
-### Code for: Comparing the (%) frequencies of H. contortus obtained through WGS (Kraken2-Bracken) and digital PCR and visualizations can be found here:
+### Comparing the (%) frequencies of H. contortus obtained through WGS (Kraken2-Bracken) and digital PCR and visualizations:
 [ddPCRvsWGS](https://github.com/pauliusbaltrusis/ITS2_Haemonchus_populations/blob/main/ddPCRvsWGS.md)
 
-### Code for: Performing the PCA and the following visualization of the data can be found here:
+### Performing the PCA and the following visualization of the data:
 [PCA](https://github.com/pauliusbaltrusis/ITS2_Haemonchus_populations/blob/main/PCA.md)
 
-### Code for: Analyzing primer and probe corresponding loci in H.contortus genome for variability can be found here:
+### Analyzing primer and probe corresponding loci in H.contortus genome for variability:
 [P&P Heatmaps](https://github.com/pauliusbaltrusis/ITS2_Haemonchus_populations/blob/main/P%26P%20Heatmaps.md)
 
-### Code for: Estimating the number of reads overlapping the probe corresponding genomic sequences in H.contortus and containing more than 3 mutated alleles can be found here:
+### Estimating the number of reads overlapping the probe corresponding genomic sequences in H.contortus and containing more than 3 mutated alleles:
 [Read_fraction_3mut](https://github.com/pauliusbaltrusis/ITS2_Haemonchus_populations/blob/main/Read_fraction_3mut.md)
 
 ## Abstact
